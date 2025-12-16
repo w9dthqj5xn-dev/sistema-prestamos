@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Préstamos - C. Polanco</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Pantalla de Login -->
+    <div id="loginScreen" class="login-screen">
+        <div class="login-container">
+            <div class="login-header">
+                <h1>🔒 Sistema de Préstamos</h1>
+                <p>Ingrese sus credenciales</p>
+            </div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="loginUsuario">Usuario</label>
+                    <input type="text" id="loginUsuario" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Contraseña</label>
+                    <input type="password" id="loginPassword" required autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn-primary btn-block">Iniciar Sesión</button>
+                <div id="loginError" class="login-error"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Aplicación Principal -->
+    <div id="appContainer" class="app-container hidden">
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div>
+                    <h1>Sistema de Préstamos</h1>
+                    <p class="subtitle">Gestión de clientes y cálculo de préstamos</p>
+                </div>
+                <div class="header-actions">
+                    <span class="user-info" id="userInfo"></span>
+                    <button class="btn-secondary" onclick="sistema.cerrarSesion()">🚪 Cerrar Sesión</button>
+                </div>
+            </div>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-button active" onclick="showTab('calculadora')">Calculadora</button>
+            <button class="tab-button" onclick="showTab('clientes')">Clientes</button>
+            <button class="tab-button" onclick="showTab('pagos')">Pagos</button>
+            <button class="tab-button" onclick="showTab('reportes')">Reportes</button>
+            <button class="tab-button" onclick="showTab('configuracion')">⚙️ Configuración</button>
+        </div>
+
+        <!-- Tab Calculadora -->
+        <div id="calculadora" class="tab-content active">
+            <div class="card">
+                <h2>Calculadora de Préstamos</h2>
+                <form id="calculadoraForm">
+                    <div class="form-group">
+                        <label for="monto">Monto del Préstamo ($)</label>
+                        <input type="text" id="monto" required placeholder="Ejemplo: 50000">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="tasa">Tasa de Interés (% mensual)</label>
+                        <input type="number" id="tasa" required min="0" step="0.01">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="plazo">Plazo (meses)</label>
+                        <input type="number" id="plazo" required min="1" step="1">
+                    </div>
+                    
+                    <button type="submit" class="btn-primary">Calcular</button>
+                </form>
+
+                <div id="resultadoCalculo" class="resultado hidden">
+                    <h3>Resultados</h3>
+                    <div class="resultado-item">
+                        <span>Pago Mensual:</span>
+                        <strong id="pagoMensual">$0</strong>
+                    </div>
+                    <div class="resultado-item">
+                        <span>Total a Pagar:</span>
+                        <strong id="totalPagar">$0</strong>
+                    </div>
+                    <div class="resultado-item">
+                        <span>Interés Total:</span>
+                        <strong id="interesTotal">$0</strong>
+                    </div>
+                    
+                    <h4>Tabla de Amortización</h4>
+                    <div class="tabla-scroll">
+                        <table id="tablaAmortizacion">
+                            <thead>
+                                <tr>
+                                    <th>Mes</th>
+                                    <th>Pago</th>
+                                    <th>Capital</th>
+                                    <th>Interés</th>
+                                    <th>Saldo</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Clientes -->
+        <div id="clientes" class="tab-content">
+            <div class="card">
+                <h2>Registrar Nuevo Cliente</h2>
+                <form id="clienteForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="nombreCliente">Nombre Completo</label>
+                            <input type="text" id="nombreCliente" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="cedulaCliente">Cédula</label>
+                            <input type="text" id="cedulaCliente" required placeholder="Ejemplo: 001-1234567-8">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="telefonoCliente">Teléfono</label>
+                            <input type="tel" id="telefonoCliente" required maxlength="15" placeholder="8091234567">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="direccionCliente">Dirección</label>
+                        <input type="text" id="direccionCliente">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="montoPrestamo">Monto del Préstamo ($)</label>
+                            <input type="text" id="montoPrestamo" required placeholder="Ejemplo: 50000">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="tasaPrestamo">Tasa de Interés (% mensual)</label>
+                            <input type="number" id="tasaPrestamo" required min="0" step="0.01">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="plazoPrestamo">Plazo (meses)</label>
+                            <input type="number" id="plazoPrestamo" required min="1" step="1">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="fechaInicio">Fecha de Inicio</label>
+                        <input type="date" id="fechaInicio" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="montoPagadoInicial">
+                            Monto ya pagado (opcional)
+                            <small style="display: block; color: #64748b; font-weight: normal;">Si este préstamo ya tiene pagos realizados, ingésalos aquí</small>
+                        </label>
+                        <input type="text" id="montoPagadoInicial" placeholder="Ejemplo: 5000">
+                    </div>
+                    
+                    <button type="submit" class="btn-primary">Registrar Cliente</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>Lista de Clientes</h2>
+                <div class="search-box">
+                    <input type="text" id="buscarCliente" placeholder="Buscar cliente...">
+                </div>
+                <div id="listaClientes" class="lista-clientes"></div>
+            </div>
+        </div>
+
+        <!-- Tab Pagos -->
+        <div id="pagos" class="tab-content">
+            <div class="card">
+                <h2>Registrar Pago</h2>
+                <form id="pagoForm">
+                    <div class="form-group">
+                        <label for="clientePago">Seleccionar Cliente</label>
+                        <select id="clientePago" required>
+                            <option value="">-- Seleccione un cliente --</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="tipoPago">Tipo de Pago</label>
+                            <select id="tipoPago" required>
+                                <option value="">-- Seleccione --</option>
+                                <option value="cuota">Cuota Mensual</option>
+                                <option value="interes">Interés</option>
+                                <option value="otro">Otro Monto</option>
+                                <option value="saldo-total">Saldo Total</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="montoPago">Monto del Pago ($)</label>
+                            <input type="text" id="montoPago" required placeholder="Ejemplo: 5000">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="fechaPago">Fecha del Pago</label>
+                            <input type="date" id="fechaPago" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="notasPago">Notas</label>
+                        <textarea id="notasPago" rows="3"></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary">Registrar Pago</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>Historial de Pagos</h2>
+                <div class="form-group">
+                    <label for="filtroClientePago">Filtrar por Cliente</label>
+                    <select id="filtroClientePago">
+                        <option value="">Todos los clientes</option>
+                    </select>
+                </div>
+                <div id="historialPagos" class="historial-pagos"></div>
+            </div>
+        </div>
+
+        <!-- Tab Reportes -->
+        <div id="reportes" class="tab-content">
+            <div class="card">
+                <div class="reporte-header">
+                    <h2>Resumen General</h2>
+                    <button class="btn-secondary" onclick="sistema.imprimirReporte()">🖨️ Imprimir Reporte</button>
+                </div>
+                
+                <div class="estadisticas-grid">
+                    <div class="stat-card stat-primary">
+                        <div class="stat-icon">💰</div>
+                        <div class="stat-info">
+                            <div class="stat-label">Total Prestado</div>
+                            <div class="stat-value" id="totalPrestado">$0</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card stat-success">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-info">
+                            <div class="stat-label">Total Cobrado</div>
+                            <div class="stat-value" id="totalCobrado">$0</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card stat-warning">
+                        <div class="stat-icon">⏳</div>
+                        <div class="stat-info">
+                            <div class="stat-label">Total Pendiente</div>
+                            <div class="stat-value" id="totalPendiente">$0</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card stat-info">
+                        <div class="stat-icon">👥</div>
+                        <div class="stat-info">
+                            <div class="stat-label">Total Clientes</div>
+                            <div class="stat-value" id="totalClientes">0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Estado de Préstamos</h2>
+                <div class="chart-container">
+                    <div class="chart-legend">
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #10b981;"></span>
+                            <span id="clientesActivos">0 Activos</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #2563eb;"></span>
+                            <span id="clientesCompletados">0 Completados</span>
+                        </div>
+                    </div>
+                    <div class="progress-chart" id="progressChart"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Detalle por Cliente</h2>
+                <div class="tabla-scroll">
+                    <table id="tablaReporteClientes">
+                        <thead>
+                            <tr>
+                                <th>Cliente</th>
+                                <th>Cédula</th>
+                                <th>Préstamo</th>
+                                <th>Cobrado</th>
+                                <th>Pendiente</th>
+                                <th>Estado</th>
+                                <th>% Completado</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Movimientos Recientes</h2>
+                <div class="form-group">
+                    <label for="filtroFechaReporte">Filtrar por Período</label>
+                    <select id="filtroFechaReporte">
+                        <option value="todo">Todo el tiempo</option>
+                        <option value="hoy">Hoy</option>
+                        <option value="semana">Última semana</option>
+                        <option value="mes" selected>Último mes</option>
+                        <option value="año">Último año</option>
+                    </select>
+                </div>
+                <div id="movimientosRecientes"></div>
+            </div>
+        </div>
+
+        <!-- Tab Configuración -->
+        <div id="configuracion" class="tab-content">
+            <div class="card">
+                <h2>Configuración de Seguridad</h2>
+                <form id="cambiarPasswordForm">
+                    <div class="form-group">
+                        <label for="usuarioActual">Usuario Actual</label>
+                        <input type="text" id="usuarioActual" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="passwordActual">Contraseña Actual</label>
+                        <input type="password" id="passwordActual" required autocomplete="current-password">
+                    </div>
+                    <div class="form-group">
+                        <label for="nuevoUsuario">Nuevo Usuario</label>
+                        <input type="text" id="nuevoUsuario" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="nuevoPassword">Nueva Contraseña</label>
+                        <input type="password" id="nuevoPassword" required autocomplete="new-password">
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmarPassword">Confirmar Nueva Contraseña</label>
+                        <input type="password" id="confirmarPassword" required autocomplete="new-password">
+                    </div>
+                    <button type="submit" class="btn-primary">Actualizar Credenciales</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>💾 Respaldo y Restauración</h2>
+                <p style="color: #64748b; margin-bottom: 20px;">Crea copias de seguridad de todos tus datos y restáuralas cuando lo necesites.</p>
+                
+                <div class="backup-actions">
+                    <div class="backup-item">
+                        <div>
+                            <h4>Crear Backup</h4>
+                            <p>Descarga una copia de seguridad de todos los datos (clientes y pagos)</p>
+                        </div>
+                        <button class="btn-secondary" onclick="sistema.crearBackup()">📥 Descargar Backup</button>
+                    </div>
+                    
+                    <div class="backup-item">
+                        <div>
+                            <h4>Restaurar Backup</h4>
+                            <p>Carga un archivo de backup para restaurar los datos</p>
+                        </div>
+                        <label class="btn-secondary" style="cursor: pointer;">
+                            📤 Cargar Backup
+                            <input type="file" id="archivoBackup" accept=".json" style="display: none;" onchange="sistema.restaurarBackup(event)">
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="info-box">
+                    <strong>ℹ️ Información:</strong>
+                    <ul style="margin: 10px 0 0 20px; color: #64748b;">
+                        <li>El backup incluye todos los clientes y pagos</li>
+                        <li>El archivo se descarga en formato JSON</li>
+                        <li>Puedes usar backups para migrar datos entre dispositivos</li>
+                        <li>Restaurar un backup reemplazará los datos actuales</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>⚠️ Zona de Peligro</h2>
+                <p style="color: #ef4444; margin-bottom: 15px;">Esta acción eliminará todos los datos del sistema de forma permanente.</p>
+                <button class="btn-danger" onclick="sistema.borrarTodosDatos()">🗑️ Borrar Todos los Datos</button>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
