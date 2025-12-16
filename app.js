@@ -466,6 +466,7 @@ class SistemaPrestamos {
             const nombre = document.getElementById('nombreCliente').value;
             const cedula = document.getElementById('cedulaCliente').value;
             const telefono = document.getElementById('telefonoCliente').value;
+            const telefono2 = document.getElementById('telefono2Cliente').value;
             const direccion = document.getElementById('direccionCliente').value;
             const monto = parseFloat(document.getElementById('montoPrestamo').value.replace(/,/g, ''));
             const tasa = parseFloat(document.getElementById('tasaPrestamo').value.replace(/,/g, ''));
@@ -554,7 +555,8 @@ class SistemaPrestamos {
         const clientesFiltrados = this.clientes.filter(cliente => 
             cliente.nombre.toLowerCase().includes(termino.toLowerCase()) ||
             cliente.cedula.includes(termino) ||
-            cliente.telefono.includes(termino)
+            cliente.telefono.includes(termino) ||
+            (cliente.telefono2 && cliente.telefono2.includes(termino))
         );
         this.renderizarClientes(clientesFiltrados);
     }
@@ -596,9 +598,13 @@ class SistemaPrestamos {
                             <span class="info-value">${cliente.cedula}</span>
                         </div>
                         <div class="info-item">
-                            <span class="info-label">Teléfono</span>
+                            <span class="info-label">Teléfono 1</span>
                             <span class="info-value">${cliente.telefono}</span>
                         </div>
+                        ${cliente.telefono2 ? `<div class="info-item">
+                            <span class="info-label">Teléfono 2</span>
+                            <span class="info-value">${cliente.telefono2}</span>
+                        </div>` : ''}
                         <div class="info-item">
                             <span class="info-label">Monto Préstamo</span>
                             <span class="info-value">${this.formatearMoneda(cliente.monto)}</span>
@@ -659,7 +665,8 @@ class SistemaPrestamos {
                 <h3>Detalle del Cliente</h3>
                 <p><strong>Nombre:</strong> ${cliente.nombre}</p>
                 <p><strong>Cédula:</strong> ${cliente.cedula}</p>
-                <p><strong>Teléfono:</strong> ${cliente.telefono}</p>
+                <p><strong>Teléfono 1:</strong> ${cliente.telefono}</p>
+                ${cliente.telefono2 ? `<p><strong>Teléfono 2:</strong> ${cliente.telefono2}</p>` : ''}
                 ${cliente.direccion ? `<p><strong>Dirección:</strong> ${cliente.direccion}</p>` : ''}
                 <p><strong>Monto del Préstamo:</strong> ${this.formatearMoneda(cliente.monto)}</p>
                 <p><strong>Frecuencia de Pago:</strong> ${this.obtenerTextoFrecuencia(cliente.frecuenciaPago || 'mensual')}</p>
