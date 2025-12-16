@@ -68,7 +68,11 @@ class SistemaPrestamos {
         document.getElementById('loginScreen').classList.add('hidden');
         document.getElementById('appContainer').classList.remove('hidden');
         document.getElementById('userInfo').textContent = `👤 ${this.usuarioActual}`;
-        this.inicializar();
+        
+        // Pequeño delay para asegurar que el DOM esté listo
+        setTimeout(() => {
+            this.inicializar();
+        }, 100);
     }
 
     intentarLogin() {
@@ -130,51 +134,82 @@ class SistemaPrestamos {
     }
 
     configurarEventos() {
+        // Verificar que los elementos existen antes de agregar eventos
+        const calculadoraForm = document.getElementById('calculadoraForm');
+        const clienteForm = document.getElementById('clienteForm');
+        const buscarCliente = document.getElementById('buscarCliente');
+        const pagoForm = document.getElementById('pagoForm');
+        const tipoPago = document.getElementById('tipoPago');
+        const clientePago = document.getElementById('clientePago');
+        const filtroClientePago = document.getElementById('filtroClientePago');
+        const filtroFechaReporte = document.getElementById('filtroFechaReporte');
+        const cambiarPasswordForm = document.getElementById('cambiarPasswordForm');
+
         // Calculadora
-        document.getElementById('calculadoraForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.calcularPrestamo();
-        });
+        if (calculadoraForm) {
+            calculadoraForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.calcularPrestamo();
+            });
+        }
 
         // Clientes
-        document.getElementById('clienteForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.registrarCliente();
-        });
+        if (clienteForm) {
+            clienteForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.registrarCliente();
+            });
+        }
 
-        document.getElementById('buscarCliente').addEventListener('input', (e) => {
-            this.buscarClientes(e.target.value);
-        });
+        if (buscarCliente) {
+            buscarCliente.addEventListener('input', (e) => {
+                this.buscarClientes(e.target.value);
+            });
+        }
 
         // Pagos
-        document.getElementById('pagoForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.registrarPago();
-        });
+        if (pagoForm) {
+            pagoForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.registrarPago();
+            });
+        }
 
-        document.getElementById('tipoPago').addEventListener('change', (e) => {
-            this.ajustarMontoPago(e.target.value);
-        });
+        if (tipoPago) {
+            tipoPago.addEventListener('change', (e) => {
+                this.ajustarMontoPago(e.target.value);
+            });
+        }
 
-        document.getElementById('clientePago').addEventListener('change', (e) => {
-            const tipoPago = document.getElementById('tipoPago').value;
-            if (tipoPago) this.ajustarMontoPago(tipoPago);
-        });
+        if (clientePago) {
+            clientePago.addEventListener('change', (e) => {
+                const tipoPagoEl = document.getElementById('tipoPago');
+                if (tipoPagoEl && tipoPagoEl.value) {
+                    this.ajustarMontoPago(tipoPagoEl.value);
+                }
+            });
+        }
 
-        document.getElementById('filtroClientePago').addEventListener('change', (e) => {
-            this.filtrarPagos(e.target.value);
-        });
+        if (filtroClientePago) {
+            filtroClientePago.addEventListener('change', (e) => {
+                this.filtrarPagos(e.target.value);
+            });
+        }
 
         // Reportes
-        document.getElementById('filtroFechaReporte').addEventListener('change', (e) => {
-            this.generarReportes();
-        });
+        if (filtroFechaReporte) {
+            filtroFechaReporte.addEventListener('change', (e) => {
+                this.generarReportes();
+            });
+        }
 
         // Configuración
-        document.getElementById('cambiarPasswordForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.cambiarCredenciales();
-        });
+        if (cambiarPasswordForm) {
+            cambiarPasswordForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.cambiarCredenciales();
+            });
+        }
     }
 
     cambiarCredenciales() {
