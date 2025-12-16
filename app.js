@@ -488,28 +488,31 @@ class SistemaPrestamos {
                          (Math.pow(1 + tasaMensual, plazo) - 1);
         }
 
-        const totalPagar = pagoMensual * plazo;
+            // Calcular cuota según frecuencia
+            let cuotaPago;
+            if (frecuenciaPago === 'semanal') {
+                cuotaPago = pagoMensual / 4;
+            } else if (frecuenciaPago === 'quincenal') {
+                cuotaPago = pagoMensual / 2;
+            } else {
+                cuotaPago = pagoMensual;
+            }
 
-        const cliente = {
-            id: Date.now(),
-            nombre,
-            cedula,
-            telefono,
-            direccion,
-            monto,
-            tasa,
-            plazo,
-            pagoMensual,
-            totalPagar,
-            fechaInicio,
-            pagado: montoPagadoInicial,
-            estado: 'activo',
-            fechaRegistro: new Date().toISOString()
-        };
+            const totalPagar = pagoMensual * plazo;
 
-        this.clientes.push(cliente);
-        this.guardarDatos('clientes', this.clientes);
-        
+            const cliente = {
+                id: Date.now(),
+                nombre,
+                cedula,
+                telefono,
+                telefono2,
+                direccion,
+                monto,
+                tasa,
+                plazo,
+                frecuenciaPago,
+                pagoMensual,
+                cuotaPago,
         // Si hay un monto inicial pagado, crear un registro de pago histórico
         if (montoPagadoInicial > 0) {
             const pagoInicial = {
