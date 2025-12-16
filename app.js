@@ -8,6 +8,7 @@ class SistemaPrestamos {
         this.pagos = this.cargarDatos('pagos') || [];
         this.sesionActiva = false;
         this.usuarioActual = null;
+        this.fotoBase64 = null;
         this.verificarSesion();
     }
 
@@ -404,6 +405,7 @@ class SistemaPrestamos {
         const cedula = document.getElementById('cedulaCliente').value;
         const telefono = document.getElementById('telefonoCliente').value;
         const direccion = document.getElementById('direccionCliente').value;
+        const fotoCedula = this.fotoBase64 || null;
         const monto = parseFloat(document.getElementById('montoPrestamo').value.replace(/,/g, ''));
         const tasa = parseFloat(document.getElementById('tasaPrestamo').value.replace(/,/g, ''));
         const plazo = parseInt(document.getElementById('plazoPrestamo').value);
@@ -429,6 +431,7 @@ class SistemaPrestamos {
             cedula,
             telefono,
             direccion,
+            fotoCedula,
             monto,
             tasa,
             plazo,
@@ -460,6 +463,8 @@ class SistemaPrestamos {
         }
         
         document.getElementById('clienteForm').reset();
+        document.getElementById('previewFoto').innerHTML = '';
+        this.fotoBase64 = null;
         this.establecerFechaActual();
         this.actualizarVistas();
 
@@ -548,6 +553,11 @@ class SistemaPrestamos {
                     </div>
 
                     <div class="cliente-actions">
+                        ${cliente.fotoCedula ? `
+                            <button class="btn-secondary" onclick="sistema.verFotoCedula(${cliente.id})">
+                                📷 Ver Cédula
+                            </button>
+                        ` : ''}
                         <button class="btn-secondary" onclick="sistema.verDetalleCliente(${cliente.id})">
                             Ver Detalle
                         </button>
@@ -572,6 +582,12 @@ class SistemaPrestamos {
                 <p><strong>Nombre:</strong> ${cliente.nombre}</p>
                 <p><strong>Cédula:</strong> ${cliente.cedula}</p>
                 <p><strong>Teléfono:</strong> ${cliente.telefono}</p>
+                ${cliente.fotoCedula ? `
+                    <div style="margin: 15px 0;">
+                        <strong>Foto de Cédula:</strong><br>
+                        <img src="${cliente.fotoCedula}" style="max-width: 100%; max-height: 300px; border-radius: 8px; margin-top: 10px; border: 2px solid #e2e8f0;">
+                    </div>
+                ` : ''}
                 ${cliente.direccion ? `<p><strong>Dirección:</strong> ${cliente.direccion}</p>` : ''}
                 <p><strong>Monto del Préstamo:</strong> ${this.formatearMoneda(cliente.monto)}</p>
                 <p><strong>Total a Pagar:</strong> ${this.formatearMoneda(cliente.totalPagar)}</p>
@@ -724,6 +740,101 @@ class SistemaPrestamos {
             </div>
             `;
         }).join('');
+    }
+
+    previsualizarFoto(event) {
+        const archivo = event.target.files[0];
+        if (!archivo) return;
+
+        // Validar que sea una imagen
+        if (!archivo.type.startsWith('image/')) {
+            this.mostrarNotificacion('Por favor seleccione un archivo de imagen', 'error');
+            event.target.value = '';
+            return;
+        }
+
+        // Validar tamaño (máximo 5MB)
+        if (archivo.size > 5 * 1024 * 1024) {
+            this.mostrarNotificacion('La imagen es muy grande. Máximo 5MB', 'error');
+            event.target.value = '';
+            return;
+        }
+
+        const lector = new FileReader();
+        
+        lector.onload = (e) => {
+            this.fotoBase64 = e.target.result;
+            const preview = document.getElementById('previewFoto');
+            preview.innerHTML = `
+                <img src="${this.fotoBase64}" alt="Preview">
+                <button type="button" class="btn-remove-foto" onclick="sistema.eliminarFotoPreview()">
+                    ❌ Eliminar
+                </button>
+            `;
+        };
+        
+        lector.readAsDataURL(archivo);
+    }
+
+    eliminarFotoPreview() {
+        this.fotoBase64 = null;
+        document.getElementById('fotoCedula').value = '';
+        document.getElementById('previewFoto').innerHTML = '';
+    }
+
+    verFotoCedula(clienteId) {
+        const cliente = this.clientes.find(c => c.id === clienteId);
+        if (!cliente || !cliente.fotoCedula) return;
+
+        const ventana = window.open('', '_blank', 'width=800,height=600');
+        ventana.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Cédula - ${cliente.nombre}</title>
+                <style>
+                    body {
+                        margin: 0;
+                        padding: 20px;
+                        background: #1e293b;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: center;
+                        min-height: 100vh;
+                    }
+                    h2 {
+                        color: white;
+                        margin-bottom: 20px;
+                    }
+                    img {
+                        max-width: 100%;
+                        max-height: 80vh;
+                        border-radius: 8px;
+                        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+                    }
+                    button {
+                        margin-top: 20px;
+                        padding: 10px 20px;
+                        background: #2563eb;
+                        color: white;
+                        border: none;
+                        border-radius: 6px;
+                        cursor: pointer;
+                        font-size: 1rem;
+                    }
+                    button:hover {
+                        background: #1e40af;
+                    }
+                </style>
+            </head>
+            <body>
+                <h2>📋 Cédula de ${cliente.nombre}</h2>
+                <img src="${cliente.fotoCedula}" alt="Cédula">
+                <button onclick="window.close()">Cerrar</button>
+            </body>
+            </html>
+        `);
     }
 
     ajustarMontoPago(tipoPago) {
