@@ -476,17 +476,17 @@ class SistemaPrestamos {
             const montoPagadoInicialInput = document.getElementById('montoPagadoInicial').value;
             const montoPagadoInicial = montoPagadoInicialInput ? parseFloat(montoPagadoInicialInput.replace(/,/g, '')) : 0;
             
-            console.log('Datos capturados:', { nombre, cedula, telefono, monto, tasa, plazo });
+            console.log('Datos capturados:', { nombre, cedula, telefono, telefono2, monto, tasa, plazo, frecuenciaPago });
 
-        const tasaMensual = tasa / 100;
-        let pagoMensual;
-        
-        if (tasaMensual === 0) {
-            pagoMensual = monto / plazo;
-        } else {
-            pagoMensual = monto * (tasaMensual * Math.pow(1 + tasaMensual, plazo)) / 
-                         (Math.pow(1 + tasaMensual, plazo) - 1);
-        }
+            const tasaMensual = tasa / 100;
+            let pagoMensual;
+            
+            if (tasaMensual === 0) {
+                pagoMensual = monto / plazo;
+            } else {
+                pagoMensual = monto * (tasaMensual * Math.pow(1 + tasaMensual, plazo)) / 
+                             (Math.pow(1 + tasaMensual, plazo) - 1);
+            }
 
             // Calcular cuota según frecuencia
             let cuotaPago;
@@ -513,22 +513,32 @@ class SistemaPrestamos {
                 frecuenciaPago,
                 pagoMensual,
                 cuotaPago,
-        // Si hay un monto inicial pagado, crear un registro de pago histórico
-        if (montoPagadoInicial > 0) {
-            const pagoInicial = {
-                id: Date.now() + 1,
-                clienteId: cliente.id,
-                clienteNombre: cliente.nombre,
-                tipoPago: 'otro',
-                monto: montoPagadoInicial,
-                fecha: fechaInicio,
-                notas: 'Pagos anteriores al registro en el sistema',
+                totalPagar,
+                fechaInicio,
+                pagado: montoPagadoInicial,
+                estado: 'activo',
                 fechaRegistro: new Date().toISOString()
             };
-            this.pagos.push(pagoInicial);
-            this.guardarDatos('pagos', this.pagos);
-        }
-        
+
+            this.clientes.push(cliente);
+            this.guardarDatos('clientes', this.clientes);
+            
+            // Si hay un monto inicial pagado, crear un registro de pago histórico
+            if (montoPagadoInicial > 0) {
+                const pagoInicial = {
+                    id: Date.now() + 1,
+                    clienteId: cliente.id,
+                    clienteNombre: cliente.nombre,
+                    tipoPago: 'otro',
+                    monto: montoPagadoInicial,
+                    fecha: fechaInicio,
+                    notas: 'Pagos anteriores al registro en el sistema',
+                    fechaRegistro: new Date().toISOString()
+                };
+                this.pagos.push(pagoInicial);
+                this.guardarDatos('pagos', this.pagos);
+            }
+            
             document.getElementById('clienteForm').reset();
             this.establecerFechaActual();
             this.actualizarVistas();
