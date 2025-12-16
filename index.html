@@ -409,6 +409,19 @@
             </div>
 
             <div class="card">
+                <h2>💾 Almacenamiento</h2>
+                <div class="info-box">
+                    <strong>Espacio Usado:</strong> <span id="espacioUsado">Calculando...</span>
+                    <p style="margin-top: 10px; color: #64748b;">
+                        <small>Límite aproximado: 5-10MB. Si el espacio está lleno, haz un backup y elimina datos antiguos o fotos grandes.</small>
+                    </p>
+                </div>
+                <button class="btn-secondary" onclick="sistema.mostrarEspacioUsado()" style="margin-top: 15px;">
+                    🔄 Actualizar Espacio
+                </button>
+            </div>
+
+            <div class="card">
                 <h2>⚠️ Zona de Peligro</h2>
                 <p style="color: #ef4444; margin-bottom: 15px;">Esta acción eliminará todos los datos del sistema de forma permanente.</p>
                 <button class="btn-danger" onclick="sistema.borrarTodosDatos()">🗑️ Borrar Todos los Datos</button>

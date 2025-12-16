@@ -18,7 +18,25 @@ class SistemaPrestamos {
     }
 
     guardarDatos(key, data) {
-        localStorage.setItem(key, JSON.stringify(data));
+        try {
+            localStorage.setItem(key, JSON.stringify(data));
+        } catch (e) {
+            if (e.name === 'QuotaExceededError') {
+                throw new Error('The quota has been exceeded.');
+            }
+            throw e;
+        }
+    }
+
+    verificarEspacioDisponible() {
+        let total = 0;
+        for (let key in localStorage) {
+            if (localStorage.hasOwnProperty(key)) {
+                total += localStorage[key].length + key.length;
+            }
+        }
+        const totalMB = (total / 1024 / 1024).toFixed(2);
+        return totalMB;
     }
 
     // ========================================
@@ -436,17 +454,22 @@ class SistemaPrestamos {
     // ========================================
 
     registrarCliente() {
-        const nombre = document.getElementById('nombreCliente').value;
-        const cedula = document.getElementById('cedulaCliente').value;
-        const telefono = document.getElementById('telefonoCliente').value;
-        const direccion = document.getElementById('direccionCliente').value;
-        const fotoCedula = this.fotoBase64 || null;
-        const monto = parseFloat(document.getElementById('montoPrestamo').value.replace(/,/g, ''));
-        const tasa = parseFloat(document.getElementById('tasaPrestamo').value.replace(/,/g, ''));
-        const plazo = parseInt(document.getElementById('plazoPrestamo').value);
-        const fechaInicio = document.getElementById('fechaInicio').value;
-        const montoPagadoInicialInput = document.getElementById('montoPagadoInicial').value;
-        const montoPagadoInicial = montoPagadoInicialInput ? parseFloat(montoPagadoInicialInput.replace(/,/g, '')) : 0;
+        try {
+            console.log('Iniciando registro de cliente...');
+            
+            const nombre = document.getElementById('nombreCliente').value;
+            const cedula = document.getElementById('cedulaCliente').value;
+            const telefono = document.getElementById('telefonoCliente').value;
+            const direccion = document.getElementById('direccionCliente').value;
+            const fotoCedula = this.fotoBase64 || null;
+            const monto = parseFloat(document.getElementById('montoPrestamo').value.replace(/,/g, ''));
+            const tasa = parseFloat(document.getElementById('tasaPrestamo').value.replace(/,/g, ''));
+            const plazo = parseInt(document.getElementById('plazoPrestamo').value);
+            const fechaInicio = document.getElementById('fechaInicio').value;
+            const montoPagadoInicialInput = document.getElementById('montoPagadoInicial').value;
+            const montoPagadoInicial = montoPagadoInicialInput ? parseFloat(montoPagadoInicialInput.replace(/,/g, '')) : 0;
+            
+            console.log('Datos capturados:', { nombre, cedula, telefono, monto, tasa, plazo });
 
         const tasaMensual = tasa / 100;
         let pagoMensual;
@@ -497,13 +520,32 @@ class SistemaPrestamos {
             this.guardarDatos('pagos', this.pagos);
         }
         
-        document.getElementById('clienteForm').reset();
-        document.getElementById('previewFoto').innerHTML = '';
-        this.fotoBase64 = null;
-        this.establecerFechaActual();
-        this.actualizarVistas();
+            document.getElementById('clienteForm').reset();
+            const previewFoto = document.getElementById('previewFoto');
+            if (previewFoto) previewFoto.innerHTML = '';
+            this.fotoBase64 = null;
+            this.establecerFechaActual();
+            this.actualizarVistas();
 
-        this.mostrarNotificacion('Cliente registrado exitosamente', 'success');
+            this.mostrarNotificacion('Cliente registrado exitosamente', 'success');
+            console.log('Cliente registrado exitosamente');
+            
+        } catch (error) {
+            console.error('Error al registrar cliente:', error);
+            
+            if (error.message.includes('quota') || error.name === 'QuotaExceededError') {
+                this.mostrarNotificacion(
+                    '⚠️ Almacenamiento lleno. \n\n' +
+                    'Opciones:\n' +
+                    '1. Haz un backup en Configuración\n' +
+                    '2. Elimina clientes antiguos\n' +
+                    '3. Evita fotos muy grandes (máx 500KB recomendado)',
+                    'error'
+                );
+            } else {
+                this.mostrarNotificacion('Error al registrar cliente: ' + error.message, 'error');
+            }
+        }
     }
 
     buscarClientes(termino) {
@@ -788,27 +830,55 @@ class SistemaPrestamos {
             return;
         }
 
-        // Validar tamaño (máximo 5MB)
-        if (archivo.size > 5 * 1024 * 1024) {
-            this.mostrarNotificacion('La imagen es muy grande. Máximo 5MB', 'error');
-            event.target.value = '';
-            return;
-        }
-
         const lector = new FileReader();
         
         lector.onload = (e) => {
-            this.fotoBase64 = e.target.result;
-            const preview = document.getElementById('previewFoto');
-            preview.innerHTML = `
-                <img src="${this.fotoBase64}" alt="Preview">
-                <button type="button" class="btn-remove-foto" onclick="sistema.eliminarFotoPreview()">
-                    ❌ Eliminar
-                </button>
-            `;
+            // Comprimir la imagen antes de guardarla
+            this.comprimirImagen(e.target.result, (imagenComprimida) => {
+                this.fotoBase64 = imagenComprimida;
+                const preview = document.getElementById('previewFoto');
+                preview.innerHTML = `
+                    <img src="${this.fotoBase64}" alt="Preview">
+                    <button type="button" class="btn-remove-foto" onclick="sistema.eliminarFotoPreview()">
+                        ❌ Eliminar
+                    </button>
+                `;
+            });
         };
         
         lector.readAsDataURL(archivo);
+    }
+
+    comprimirImagen(dataUrl, callback) {
+        const img = new Image();
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            let width = img.width;
+            let height = img.height;
+            
+            // Redimensionar si es muy grande (máximo 1200px)
+            const maxDimension = 1200;
+            if (width > maxDimension || height > maxDimension) {
+                if (width > height) {
+                    height = (height * maxDimension) / width;
+                    width = maxDimension;
+                } else {
+                    width = (width * maxDimension) / height;
+                    height = maxDimension;
+                }
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            // Comprimir a 70% de calidad
+            const imagenComprimida = canvas.toDataURL('image/jpeg', 0.7);
+            callback(imagenComprimida);
+        };
+        img.src = dataUrl;
     }
 
     eliminarFotoPreview() {
@@ -927,6 +997,19 @@ class SistemaPrestamos {
         this.renderizarPagos();
         this.actualizarSelectoresClientes();
         this.generarReportes();
+        this.mostrarEspacioUsado();
+    }
+
+    mostrarEspacioUsado() {
+        const espacioMB = this.verificarEspacioDisponible();
+        const elemento = document.getElementById('espacioUsado');
+        if (elemento) {
+            let color = '#10b981'; // verde
+            if (espacioMB > 7) color = '#ef4444'; // rojo
+            else if (espacioMB > 4) color = '#f59e0b'; // amarillo
+            
+            elemento.innerHTML = `<strong style="color: ${color};">${espacioMB} MB</strong>`;
+        }
     }
 
     // ========================================
