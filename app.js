@@ -780,8 +780,9 @@ class SistemaPrestamos {
 
         contenedor.innerHTML = pagosOrdenados.map(pago => {
             const tipoPagoTexto = {
-                'cuota': '📋 Cuota Mensual',
-                'interes': '💰 Interés',
+                'semanal': '📅 Cuota Semanal',
+                'quincenal': '📆 Cuota Quincenal',
+                'mensual': '📋 Cuota Mensual',
                 'otro': '💵 Otro Monto',
                 'saldo-total': '✅ Saldo Total'
             }[pago.tipoPago] || '💵 Pago';
@@ -811,12 +812,21 @@ class SistemaPrestamos {
 
         const montoInput = document.getElementById('montoPago');
         
-        if (tipoPago === 'cuota') {
+        if (tipoPago === 'semanal') {
+            // Cuota semanal: pagoMensual / 4 (aproximado)
+            const cuotaSemanal = cliente.pagoMensual / 4;
+            montoInput.value = cuotaSemanal.toFixed(2);
+        } else if (tipoPago === 'quincenal') {
+            // Cuota quincenal: pagoMensual / 2
+            const cuotaQuincenal = cliente.pagoMensual / 2;
+            montoInput.value = cuotaQuincenal.toFixed(2);
+        } else if (tipoPago === 'mensual') {
+            // Cuota mensual
             montoInput.value = cliente.pagoMensual.toFixed(2);
         } else if (tipoPago === 'saldo-total') {
             const saldoPendiente = cliente.totalPagar - cliente.pagado;
             montoInput.value = saldoPendiente.toFixed(2);
-        } else if (tipoPago === 'otro' || tipoPago === 'interes') {
+        } else if (tipoPago === 'otro') {
             montoInput.value = '';
         }
     }
@@ -1009,8 +1019,9 @@ class SistemaPrestamos {
         
         return pagosOrdenados.map(pago => {
             const tipoPagoTexto = {
-                'cuota': '📋 Cuota Mensual',
-                'interes': '💰 Interés',
+                'semanal': '📅 Cuota Semanal',
+                'quincenal': '📆 Cuota Quincenal',
+                'mensual': '📋 Cuota Mensual',
                 'otro': '💵 Otro Monto',
                 'saldo-total': '✅ Saldo Total'
             }[pago.tipoPago] || '💵 Pago';
