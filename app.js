@@ -200,8 +200,15 @@ class SistemaPrestamos {
 
         if (clientePago) {
             clientePago.addEventListener('change', (e) => {
+                const clienteId = parseInt(e.target.value);
+                const cliente = this.clientes.find(c => c.id === clienteId);
                 const tipoPagoEl = document.getElementById('tipoPago');
-                if (tipoPagoEl && tipoPagoEl.value) {
+                
+                // Auto-seleccionar la frecuencia del cliente
+                if (cliente && cliente.frecuenciaPago && tipoPagoEl) {
+                    tipoPagoEl.value = cliente.frecuenciaPago;
+                    this.ajustarMontoPago(cliente.frecuenciaPago);
+                } else if (tipoPagoEl && tipoPagoEl.value) {
                     this.ajustarMontoPago(tipoPagoEl.value);
                 }
             });
@@ -463,6 +470,7 @@ class SistemaPrestamos {
             const monto = parseFloat(document.getElementById('montoPrestamo').value.replace(/,/g, ''));
             const tasa = parseFloat(document.getElementById('tasaPrestamo').value.replace(/,/g, ''));
             const plazo = parseInt(document.getElementById('plazoPrestamo').value);
+            const frecuenciaPago = document.getElementById('frecuenciaPago').value;
             const fechaInicio = document.getElementById('fechaInicio').value;
             const montoPagadoInicialInput = document.getElementById('montoPagadoInicial').value;
             const montoPagadoInicial = montoPagadoInicialInput ? parseFloat(montoPagadoInicialInput.replace(/,/g, '')) : 0;
@@ -604,8 +612,12 @@ class SistemaPrestamos {
                             <span class="info-value">${cliente.plazo} meses</span>
                         </div>
                         <div class="info-item">
-                            <span class="info-label">Pago Mensual</span>
-                            <span class="info-value">${this.formatearMoneda(cliente.pagoMensual)}</span>
+                            <span class="info-label">Frecuencia</span>
+                            <span class="info-value">${this.obtenerTextoFrecuencia(cliente.frecuenciaPago || 'mensual')}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Cuota a Pagar</span>
+                            <span class="info-value">${this.formatearMoneda(cliente.cuotaPago || cliente.pagoMensual)}</span>
                         </div>
                         <div class="info-item">
                             <span class="info-label">Fecha Inicio</span>
@@ -650,6 +662,8 @@ class SistemaPrestamos {
                 <p><strong>Teléfono:</strong> ${cliente.telefono}</p>
                 ${cliente.direccion ? `<p><strong>Dirección:</strong> ${cliente.direccion}</p>` : ''}
                 <p><strong>Monto del Préstamo:</strong> ${this.formatearMoneda(cliente.monto)}</p>
+                <p><strong>Frecuencia de Pago:</strong> ${this.obtenerTextoFrecuencia(cliente.frecuenciaPago || 'mensual')}</p>
+                <p><strong>Cuota a Pagar:</strong> ${this.formatearMoneda(cliente.cuotaPago || cliente.pagoMensual)}</p>
                 <p><strong>Total a Pagar:</strong> ${this.formatearMoneda(cliente.totalPagar)}</p>
                 <p><strong>Total Pagado:</strong> ${this.formatearMoneda(cliente.pagado)}</p>
                 <p><strong>Saldo Pendiente:</strong> ${this.formatearMoneda(cliente.totalPagar - cliente.pagado)}</p>
@@ -813,15 +827,12 @@ class SistemaPrestamos {
         const montoInput = document.getElementById('montoPago');
         
         if (tipoPago === 'semanal') {
-            // Cuota semanal: pagoMensual / 4 (aproximado)
             const cuotaSemanal = cliente.pagoMensual / 4;
             montoInput.value = cuotaSemanal.toFixed(2);
         } else if (tipoPago === 'quincenal') {
-            // Cuota quincenal: pagoMensual / 2
             const cuotaQuincenal = cliente.pagoMensual / 2;
             montoInput.value = cuotaQuincenal.toFixed(2);
         } else if (tipoPago === 'mensual') {
-            // Cuota mensual
             montoInput.value = cliente.pagoMensual.toFixed(2);
         } else if (tipoPago === 'saldo-total') {
             const saldoPendiente = cliente.totalPagar - cliente.pagado;
@@ -829,6 +840,15 @@ class SistemaPrestamos {
         } else if (tipoPago === 'otro') {
             montoInput.value = '';
         }
+    }
+
+    obtenerTextoFrecuencia(frecuencia) {
+        const textos = {
+            'semanal': '📅 Semanal',
+            'quincenal': '📆 Quincenal',
+            'mensual': '📋 Mensual'
+        };
+        return textos[frecuencia] || '📋 Mensual';
     }
 
     actualizarSelectoresClientes() {
