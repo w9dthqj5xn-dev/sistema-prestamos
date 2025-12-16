@@ -73,6 +73,15 @@
                         <input type="number" id="plazo" required min="1" step="1">
                     </div>
                     
+                    <div class="form-group">
+                        <label for="frecuenciaCalculadora">Frecuencia de Pago</label>
+                        <select id="frecuenciaCalculadora" required>
+                            <option value="semanal">📅 Semanal</option>
+                            <option value="quincenal">📆 Quincenal</option>
+                            <option value="mensual" selected>📋 Mensual</option>
+                        </select>
+                    </div>
+                    
                     <button type="submit" class="btn-primary">Calcular</button>
                 </form>
 

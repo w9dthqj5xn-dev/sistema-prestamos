@@ -404,6 +404,7 @@ class SistemaPrestamos {
         const monto = parseFloat(document.getElementById('monto').value.replace(/,/g, ''));
         const tasaMensual = parseFloat(document.getElementById('tasa').value.replace(/,/g, '')) / 100;
         const plazo = parseInt(document.getElementById('plazo').value);
+        const frecuencia = document.getElementById('frecuenciaCalculadora').value;
 
         // Cálculo de pago mensual usando fórmula de amortización
         let pagoMensual;
@@ -414,42 +415,79 @@ class SistemaPrestamos {
                          (Math.pow(1 + tasaMensual, plazo) - 1);
         }
 
+        // Calcular cuota según frecuencia
+        let cuotaPago;
+        let nombrePeriodo;
+        let totalPeriodos;
+        
+        if (frecuencia === 'semanal') {
+            cuotaPago = pagoMensual / 4;
+            nombrePeriodo = 'Semanal';
+            totalPeriodos = plazo * 4;
+        } else if (frecuencia === 'quincenal') {
+            cuotaPago = pagoMensual / 2;
+            nombrePeriodo = 'Quincenal';
+            totalPeriodos = plazo * 2;
+        } else {
+            cuotaPago = pagoMensual;
+            nombrePeriodo = 'Mensual';
+            totalPeriodos = plazo;
+        }
+
         const totalPagar = pagoMensual * plazo;
         const interesTotal = totalPagar - monto;
 
         // Mostrar resultados
-        document.getElementById('pagoMensual').textContent = this.formatearMoneda(pagoMensual);
+        document.getElementById('pagoMensual').textContent = `${this.formatearMoneda(cuotaPago)} (${nombrePeriodo})`;
         document.getElementById('totalPagar').textContent = this.formatearMoneda(totalPagar);
         document.getElementById('interesTotal').textContent = this.formatearMoneda(interesTotal);
 
         // Generar tabla de amortización
-        this.generarTablaAmortizacion(monto, tasaMensual, plazo, pagoMensual);
+        this.generarTablaAmortizacion(monto, tasaMensual, plazo, cuotaPago, frecuencia, totalPeriodos, nombrePeriodo);
 
         document.getElementById('resultadoCalculo').classList.remove('hidden');
     }
 
-    generarTablaAmortizacion(monto, tasaMensual, plazo, pagoMensual) {
+    generarTablaAmortizacion(monto, tasaMensual, plazo, cuotaPago, frecuencia, totalPeriodos, nombrePeriodo) {
         const tbody = document.querySelector('#tablaAmortizacion tbody');
         tbody.innerHTML = '';
+        
+        // Actualizar encabezado de la tabla
+        const thead = document.querySelector('#tablaAmortizacion thead tr');
+        thead.innerHTML = `
+            <th>${nombrePeriodo === 'Mensual' ? 'Mes' : nombrePeriodo === 'Quincenal' ? 'Quincena' : 'Semana'}</th>
+            <th>Pago</th>
+            <th>Capital</th>
+            <th>Interés</th>
+            <th>Saldo</th>
+        `;
 
         let saldo = monto;
+        let tasaPeriodo = tasaMensual;
+        
+        // Ajustar tasa según frecuencia
+        if (frecuencia === 'semanal') {
+            tasaPeriodo = tasaMensual / 4;
+        } else if (frecuencia === 'quincenal') {
+            tasaPeriodo = tasaMensual / 2;
+        }
 
-        for (let mes = 1; mes <= plazo; mes++) {
-            const interesMes = saldo * tasaMensual;
-            const capitalMes = pagoMensual - interesMes;
-            saldo = saldo - capitalMes;
+        for (let periodo = 1; periodo <= totalPeriodos; periodo++) {
+            const interesPeriodo = saldo * tasaPeriodo;
+            const capitalPeriodo = cuotaPago - interesPeriodo;
+            saldo = saldo - capitalPeriodo;
 
             // Ajustar último pago para evitar errores de redondeo
-            if (mes === plazo) {
+            if (periodo === totalPeriodos) {
                 saldo = 0;
             }
 
             const fila = tbody.insertRow();
             fila.innerHTML = `
-                <td>${mes}</td>
-                <td>${this.formatearMoneda(pagoMensual)}</td>
-                <td>${this.formatearMoneda(capitalMes)}</td>
-                <td>${this.formatearMoneda(interesMes)}</td>
+                <td>${periodo}</td>
+                <td>${this.formatearMoneda(cuotaPago)}</td>
+                <td>${this.formatearMoneda(capitalPeriodo)}</td>
+                <td>${this.formatearMoneda(interesPeriodo)}</td>
                 <td>${this.formatearMoneda(Math.max(0, saldo))}</td>
             `;
         }
