@@ -1,4 +1,4 @@
-# Sistema de Préstamos - C. Polanco
+# Sistema de Prestamos
 
 Sistema completo para la gestión de préstamos con cálculo de intereses, seguimiento de clientes y control de pagos.
 
