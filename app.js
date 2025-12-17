@@ -401,8 +401,8 @@ class SistemaPrestamos {
     // ========================================
 
     calcularPrestamo() {
-        const monto = parseFloat(document.getElementById('monto').value.replace(/,/g, ''));
-        const tasaMensual = parseFloat(document.getElementById('tasa').value.replace(/,/g, '')) / 100;
+        const monto = this.parseInputNumber(document.getElementById('monto').value);
+        const tasaMensual = this.parseInputNumber(document.getElementById('tasa').value) / 100;
         const plazo = parseInt(document.getElementById('plazo').value);
         const frecuencia = document.getElementById('frecuenciaCalc') ? document.getElementById('frecuenciaCalc').value : 'mensual';
 
@@ -479,13 +479,13 @@ class SistemaPrestamos {
             const telefono = document.getElementById('telefonoCliente').value;
             const telefono2 = document.getElementById('telefono2Cliente').value;
             const direccion = document.getElementById('direccionCliente').value;
-            const monto = parseFloat(document.getElementById('montoPrestamo').value.replace(/,/g, ''));
-            const tasa = parseFloat(document.getElementById('tasaPrestamo').value.replace(/,/g, ''));
+            const monto = this.parseInputNumber(document.getElementById('montoPrestamo').value);
+            const tasa = this.parseInputNumber(document.getElementById('tasaPrestamo').value);
             const plazo = parseInt(document.getElementById('plazoPrestamo').value);
             const frecuenciaPago = document.getElementById('frecuenciaPago').value;
             const fechaInicio = document.getElementById('fechaInicio').value;
             const montoPagadoInicialInput = document.getElementById('montoPagadoInicial').value;
-            const montoPagadoInicial = montoPagadoInicialInput ? parseFloat(montoPagadoInicialInput.replace(/,/g, '')) : 0;
+            const montoPagadoInicial = montoPagadoInicialInput ? this.parseInputNumber(montoPagadoInicialInput) : 0;
             
             console.log('Datos capturados:', { nombre, cedula, telefono, telefono2, monto, tasa, plazo, frecuenciaPago });
 
@@ -765,7 +765,7 @@ class SistemaPrestamos {
     registrarPago() {
         const clienteId = parseInt(document.getElementById('clientePago').value);
         const tipoPago = document.getElementById('tipoPago').value;
-        const monto = parseFloat(document.getElementById('montoPago').value.replace(/,/g, ''));
+        const monto = this.parseInputNumber(document.getElementById('montoPago').value);
         const fecha = document.getElementById('fechaPago').value;
         const notas = document.getElementById('notasPago').value;
 
@@ -931,6 +931,42 @@ class SistemaPrestamos {
             
             elemento.innerHTML = `<strong style="color: ${color};">${espacioMB} MB</strong>`;
         }
+    }
+
+    // Parseo seguro de números con soporte para separadores locales
+    parseInputNumber(value) {
+        if (value === null || value === undefined) return 0;
+        let s = String(value).trim();
+        if (s === '') return 0;
+
+        // Si contiene tanto ',' como '.' asumimos formato europeo: puntos miles, coma decimal
+        if (s.indexOf(',') > -1 && s.indexOf('.') > -1) {
+            return parseFloat(s.replace(/\./g, '').replace(/,/g, '.')) || 0;
+        }
+
+        // Si contiene solo comas, tratarlas como separador decimal
+        if (s.indexOf(',') > -1) {
+            return parseFloat(s.replace(/\./g, '').replace(/,/g, '.')) || 0;
+        }
+
+        // Si contiene puntos, decidir si son separadores de miles o decimal
+        const dotCount = (s.match(/\./g) || []).length;
+        if (dotCount > 1) {
+            // varios puntos -> eliminar todos (separadores de miles)
+            return parseFloat(s.replace(/\./g, '')) || 0;
+        }
+        if (dotCount === 1) {
+            const parts = s.split('.');
+            // Si la parte después del punto tiene 3 cifras, probablemente es separador de miles
+            if (parts[1].length === 3) {
+                return parseFloat(parts.join('')) || 0;
+            }
+            // En cualquier otro caso, tratar punto como decimal
+            return parseFloat(s) || 0;
+        }
+
+        // Sin separadores
+        return parseFloat(s) || 0;
     }
 
     // ========================================
