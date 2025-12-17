@@ -397,97 +397,70 @@ class SistemaPrestamos {
     }
 
     // ========================================
-    // CALCULADORA DE PRESTAMOS
+    // CALCULADORA DE PRÉSTAMOS
     // ========================================
 
     calcularPrestamo() {
         const monto = parseFloat(document.getElementById('monto').value.replace(/,/g, ''));
         const tasaMensual = parseFloat(document.getElementById('tasa').value.replace(/,/g, '')) / 100;
         const plazo = parseInt(document.getElementById('plazo').value);
-        const frecuencia = document.getElementById('frecuenciaCalculadora').value;
+        const frecuencia = document.getElementById('frecuenciaCalc') ? document.getElementById('frecuenciaCalc').value : 'mensual';
 
-        // Cálculo de pago mensual usando fórmula de amortización
-        let pagoMensual;
-        if (tasaMensual === 0) {
-            pagoMensual = monto / plazo;
+        // Determinar factor de periodo según frecuencia
+        const factor = (frecuencia === 'semanal') ? 4 : (frecuencia === 'quincenal') ? 2 : 1;
+        const tasaPeriodica = tasaMensual / factor; // tasa por periodo (si tasaMensual es 0.02 -> semanal ~0.005)
+        const totalPeriodos = plazo * factor;
+
+        // Cálculo de pago por periodo usando fórmula de amortización general
+        let pagoPeriodo;
+        if (tasaPeriodica === 0) {
+            pagoPeriodo = monto / totalPeriodos;
         } else {
-            pagoMensual = monto * (tasaMensual * Math.pow(1 + tasaMensual, plazo)) / 
-                         (Math.pow(1 + tasaMensual, plazo) - 1);
+            pagoPeriodo = monto * (tasaPeriodica * Math.pow(1 + tasaPeriodica, totalPeriodos)) /
+                          (Math.pow(1 + tasaPeriodica, totalPeriodos) - 1);
         }
 
-        // Calcular cuota según frecuencia
-        let cuotaPago;
-        let nombrePeriodo;
-        let totalPeriodos;
-        
-        if (frecuencia === 'semanal') {
-            cuotaPago = pagoMensual / 4;
-            nombrePeriodo = 'Semanal';
-            totalPeriodos = plazo * 4;
-        } else if (frecuencia === 'quincenal') {
-            cuotaPago = pagoMensual / 2;
-            nombrePeriodo = 'Quincenal';
-            totalPeriodos = plazo * 2;
-        } else {
-            cuotaPago = pagoMensual;
-            nombrePeriodo = 'Mensual';
-            totalPeriodos = plazo;
-        }
-
-        const totalPagar = pagoMensual * plazo;
+        const totalPagar = pagoPeriodo * totalPeriodos;
         const interesTotal = totalPagar - monto;
 
-        // Mostrar resultados
-        document.getElementById('pagoMensual').textContent = `${this.formatearMoneda(cuotaPago)} (${nombrePeriodo})`;
+        // Mostrar resultados (texto adaptado a la frecuencia)
+        const labelPago = (frecuencia === 'semanal') ? 'Pago Semanal' : (frecuencia === 'quincenal') ? 'Pago Quincenal' : 'Pago Mensual';
+        document.getElementById('pagoMensual').previousElementSibling.textContent = labelPago + ':';
+        document.getElementById('pagoMensual').textContent = this.formatearMoneda(pagoPeriodo);
         document.getElementById('totalPagar').textContent = this.formatearMoneda(totalPagar);
         document.getElementById('interesTotal').textContent = this.formatearMoneda(interesTotal);
 
-        // Generar tabla de amortización
-        this.generarTablaAmortizacion(monto, tasaMensual, plazo, cuotaPago, frecuencia, totalPeriodos, nombrePeriodo);
+        // Generar tabla de amortización por periodo
+        this.generarTablaAmortizacion(monto, tasaPeriodica, totalPeriodos, pagoPeriodo, frecuencia);
 
         document.getElementById('resultadoCalculo').classList.remove('hidden');
     }
 
-    generarTablaAmortizacion(monto, tasaMensual, plazo, cuotaPago, frecuencia, totalPeriodos, nombrePeriodo) {
+    generarTablaAmortizacion(monto, tasaPeriodica, totalPeriodos, pagoPeriodo, frecuencia) {
         const tbody = document.querySelector('#tablaAmortizacion tbody');
         tbody.innerHTML = '';
-        
-        // Actualizar encabezado de la tabla
-        const thead = document.querySelector('#tablaAmortizacion thead tr');
-        thead.innerHTML = `
-            <th>${nombrePeriodo === 'Mensual' ? 'Mes' : nombrePeriodo === 'Quincenal' ? 'Quincena' : 'Semana'}</th>
-            <th>Pago</th>
-            <th>Capital</th>
-            <th>Interés</th>
-            <th>Saldo</th>
-        `;
 
         let saldo = monto;
-        let tasaPeriodo = tasaMensual;
-        
-        // Ajustar tasa según frecuencia
-        if (frecuencia === 'semanal') {
-            tasaPeriodo = tasaMensual / 4;
-        } else if (frecuencia === 'quincenal') {
-            tasaPeriodo = tasaMensual / 2;
-        }
+        const periodoLabel = (frecuencia === 'semanal') ? 'Semana' : (frecuencia === 'quincenal') ? 'Quincena' : 'Mes';
 
-        for (let periodo = 1; periodo <= totalPeriodos; periodo++) {
-            const interesPeriodo = saldo * tasaPeriodo;
-            const capitalPeriodo = cuotaPago - interesPeriodo;
-            saldo = saldo - capitalPeriodo;
+        for (let i = 1; i <= totalPeriodos; i++) {
+            const interes = saldo * tasaPeriodica;
+            let capital = pagoPeriodo - interes;
 
             // Ajustar último pago para evitar errores de redondeo
-            if (periodo === totalPeriodos) {
-                saldo = 0;
+            if (i === totalPeriodos) {
+                capital = saldo;
             }
+
+            saldo = saldo - capital;
+            if (saldo < 1e-8) saldo = 0;
 
             const fila = tbody.insertRow();
             fila.innerHTML = `
-                <td>${periodo}</td>
-                <td>${this.formatearMoneda(cuotaPago)}</td>
-                <td>${this.formatearMoneda(capitalPeriodo)}</td>
-                <td>${this.formatearMoneda(interesPeriodo)}</td>
+                <td>${periodoLabel} ${i}</td>
+                <td>${this.formatearMoneda(pagoPeriodo)}</td>
+                <td>${this.formatearMoneda(capital)}</td>
+                <td>${this.formatearMoneda(interes)}</td>
                 <td>${this.formatearMoneda(Math.max(0, saldo))}</td>
             `;
         }
@@ -657,7 +630,7 @@ class SistemaPrestamos {
                             <span class="info-value">${cliente.telefono2}</span>
                         </div>` : ''}
                         <div class="info-item">
-                            <span class="info-label">Monto Prestamo</span>
+                            <span class="info-label">Monto Préstamo</span>
                             <span class="info-value">${this.formatearMoneda(cliente.monto)}</span>
                         </div>
                         <div class="info-item">
@@ -719,7 +692,7 @@ class SistemaPrestamos {
                 <p><strong>Teléfono 1:</strong> ${cliente.telefono}</p>
                 ${cliente.telefono2 ? `<p><strong>Teléfono 2:</strong> ${cliente.telefono2}</p>` : ''}
                 ${cliente.direccion ? `<p><strong>Dirección:</strong> ${cliente.direccion}</p>` : ''}
-                <p><strong>Monto del Prestamo:</strong> ${this.formatearMoneda(cliente.monto)}</p>
+                <p><strong>Monto del Préstamo:</strong> ${this.formatearMoneda(cliente.monto)}</p>
                 <p><strong>Frecuencia de Pago:</strong> ${this.obtenerTextoFrecuencia(cliente.frecuenciaPago || 'mensual')}</p>
                 <p><strong>Cuota a Pagar:</strong> ${this.formatearMoneda(cliente.cuotaPago || cliente.pagoMensual)}</p>
                 <p><strong>Total a Pagar:</strong> ${this.formatearMoneda(cliente.totalPagar)}</p>
@@ -1124,7 +1097,7 @@ class SistemaPrestamos {
             <!DOCTYPE html>
             <html>
             <head>
-                <title>Reporte de Prestamos</title>
+                <title>Reporte de Préstamos</title>
                 <style>
                     body { font-family: Arial, sans-serif; padding: 20px; }
                     h1, h2 { color: #2563eb; }
@@ -1137,7 +1110,7 @@ class SistemaPrestamos {
                 </style>
             </head>
             <body>
-                <h1>Reporte de Prestamos</h1>
+                <h1>Reporte de Préstamos</h1>
                 <p><strong>Fecha:</strong> ${new Date().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
                 
                 <div class="summary">
@@ -1167,7 +1140,7 @@ class SistemaPrestamos {
                             <th>Cliente</th>
                             <th>Cédula</th>
                             <th>Teléfono</th>
-                            <th>Prestamo</th>
+                            <th>Préstamo</th>
                             <th>Cobrado</th>
                             <th>Pendiente</th>
                             <th>Estado</th>

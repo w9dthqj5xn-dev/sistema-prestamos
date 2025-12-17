@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Prestamos</title>
+    <title>Sistema de Préstamos - C. Polanco</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <!-- Pantalla de Login -->
     <div id="loginScreen" class="login-screen">
         <div class="login-container">
-                <div class="login-header">
-                <h1>🔒 Sistema de Prestamos</h1>
+            <div class="login-header">
+                <h1>🔒 Sistema de Préstamos</h1>
                 <p>Ingrese sus credenciales</p>
-                </div>
+            </div>
             <form id="loginForm">
                 <div class="form-group">
                     <label for="loginUsuario">Usuario</label>
@@ -33,9 +33,9 @@
     <div id="appContainer" class="app-container hidden">
     <div class="container">
         <header>
-                    <div class="header-content">
+            <div class="header-content">
                 <div>
-                    <h1>Sistema de Prestamos</h1>
+                    <h1>Sistema de Préstamos</h1>
                     <p class="subtitle">Gestión de clientes y cálculo de préstamos</p>
                 </div>
                 <div class="header-actions">
@@ -56,10 +56,10 @@
         <!-- Tab Calculadora -->
         <div id="calculadora" class="tab-content active">
             <div class="card">
-                <h2>Calculadora de Prestamos</h2>
+                <h2>Calculadora de Préstamos</h2>
                 <form id="calculadoraForm">
                     <div class="form-group">
-                        <label for="monto">Monto del Prestamo ($)</label>
+                        <label for="monto">Monto del Préstamo ($)</label>
                         <input type="text" id="monto" required placeholder="Ejemplo: 50000">
                     </div>
                     
@@ -74,11 +74,11 @@
                     </div>
                     
                     <div class="form-group">
-                        <label for="frecuenciaCalculadora">Frecuencia de Pago</label>
-                        <select id="frecuenciaCalculadora" required>
-                            <option value="semanal">📅 Semanal</option>
-                            <option value="quincenal">📆 Quincenal</option>
+                        <label for="frecuenciaCalc">Frecuencia de Cobro</label>
+                        <select id="frecuenciaCalc">
                             <option value="mensual" selected>📋 Mensual</option>
+                            <option value="quincenal">📆 Quincenal</option>
+                            <option value="semanal">📅 Semanal</option>
                         </select>
                     </div>
                     
@@ -306,7 +306,7 @@
             </div>
 
             <div class="card">
-                <h2>Estado de Prestamos</h2>
+                <h2>Estado de Préstamos</h2>
                 <div class="chart-container">
                     <div class="chart-legend">
                         <div class="legend-item">
