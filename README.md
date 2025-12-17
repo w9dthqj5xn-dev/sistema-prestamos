@@ -1,10 +1,10 @@
 # Sistema de Prestamos
 
-Sistema completo para la gestión de préstamos con cálculo de intereses, seguimiento de clientes y control de pagos.
+Sistema completo para la gestión de prestamos con cálculo de intereses, seguimiento de clientes y control de pagos.
 
 ## 🚀 Características
 
-- **Calculadora de Préstamos**: Calcula pagos mensuales, interés total y genera tabla de amortización
+- **Calculadora de Prestamos**: Calcula pagos mensuales, interés total y genera tabla de amortización
 - **Gestión de Clientes**: Registra y administra información de clientes con sus préstamos
 - **Control de Pagos**: Registra pagos realizados y visualiza pagos pendientes
 - **Persistencia de Datos**: Toda la información se guarda localmente en el navegador
@@ -12,7 +12,7 @@ Sistema completo para la gestión de préstamos con cálculo de intereses, segui
 
 ## 📋 Funcionalidades
 
-### Calculadora de Préstamos
+-### Calculadora de Prestamos
 - Calcula el pago mensual basado en monto, tasa de interés y plazo
 - Genera tabla de amortización detallada mes por mes
 - Muestra el total a pagar y el interés total
@@ -38,7 +38,7 @@ Sistema completo para la gestión de préstamos con cálculo de intereses, segui
 
 2. **Comenzar a usar**:
    - Ve a la pestaña "Calculadora" para hacer cálculos rápidos
-   - Ve a "Clientes" para registrar nuevos préstamos
+   - Ve a "Clientes" para registrar nuevos prestamos
    - Ve a "Pagos" para registrar los abonos de los clientes
 
 ## 💾 Almacenamiento de Datos

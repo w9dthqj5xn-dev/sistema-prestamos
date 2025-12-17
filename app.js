@@ -397,7 +397,7 @@ class SistemaPrestamos {
     }
 
     // ========================================
-    // CALCULADORA DE PRÉSTAMOS
+    // CALCULADORA DE PRESTAMOS
     // ========================================
 
     calcularPrestamo() {
@@ -657,7 +657,7 @@ class SistemaPrestamos {
                             <span class="info-value">${cliente.telefono2}</span>
                         </div>` : ''}
                         <div class="info-item">
-                            <span class="info-label">Monto Préstamo</span>
+                            <span class="info-label">Monto Prestamo</span>
                             <span class="info-value">${this.formatearMoneda(cliente.monto)}</span>
                         </div>
                         <div class="info-item">
@@ -719,7 +719,7 @@ class SistemaPrestamos {
                 <p><strong>Teléfono 1:</strong> ${cliente.telefono}</p>
                 ${cliente.telefono2 ? `<p><strong>Teléfono 2:</strong> ${cliente.telefono2}</p>` : ''}
                 ${cliente.direccion ? `<p><strong>Dirección:</strong> ${cliente.direccion}</p>` : ''}
-                <p><strong>Monto del Préstamo:</strong> ${this.formatearMoneda(cliente.monto)}</p>
+                <p><strong>Monto del Prestamo:</strong> ${this.formatearMoneda(cliente.monto)}</p>
                 <p><strong>Frecuencia de Pago:</strong> ${this.obtenerTextoFrecuencia(cliente.frecuenciaPago || 'mensual')}</p>
                 <p><strong>Cuota a Pagar:</strong> ${this.formatearMoneda(cliente.cuotaPago || cliente.pagoMensual)}</p>
                 <p><strong>Total a Pagar:</strong> ${this.formatearMoneda(cliente.totalPagar)}</p>
@@ -1124,7 +1124,7 @@ class SistemaPrestamos {
             <!DOCTYPE html>
             <html>
             <head>
-                <title>Reporte de Préstamos</title>
+                <title>Reporte de Prestamos</title>
                 <style>
                     body { font-family: Arial, sans-serif; padding: 20px; }
                     h1, h2 { color: #2563eb; }
@@ -1137,7 +1137,7 @@ class SistemaPrestamos {
                 </style>
             </head>
             <body>
-                <h1>Reporte de Préstamos</h1>
+                <h1>Reporte de Prestamos</h1>
                 <p><strong>Fecha:</strong> ${new Date().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
                 
                 <div class="summary">
@@ -1167,7 +1167,7 @@ class SistemaPrestamos {
                             <th>Cliente</th>
                             <th>Cédula</th>
                             <th>Teléfono</th>
-                            <th>Préstamo</th>
+                            <th>Prestamo</th>
                             <th>Cobrado</th>
                             <th>Pendiente</th>
                             <th>Estado</th>
