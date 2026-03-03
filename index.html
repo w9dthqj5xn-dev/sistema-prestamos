@@ -3,8 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="description" content="Sistema de gestión de préstamos y pagos con recibos en PDF">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Préstamos">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect fill='%232563eb' width='180' height='180'/><text x='50%' y='50%' font-size='80' font-weight='bold' fill='white' text-anchor='middle' dominant-baseline='central'>💰</text></svg>">
+    <link rel="manifest" href="manifest.json">
     <title>Sistema de Préstamos - C. Polanco</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Firebase SDK (opcional - descomenta si usas Firebase) -->
+    <!-- 
+    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js"></script>
+    -->
 </head>
 <body>
     <!-- Pantalla de Login -->
@@ -34,9 +47,12 @@
     <div class="container">
         <header>
             <div class="header-content">
-                <div>
-                    <h1>Sistema de Préstamos</h1>
-                    <p class="subtitle">Gestión de clientes y cálculo de préstamos</p>
+                <div class="header-left">
+                    <div id="logoEmpresaHeader" class="logo-header"></div>
+                    <div>
+                        <h1 id="tituloEmpresa">Sistema de Préstamos</h1>
+                        <p class="subtitle" id="subtituloEmpresa">Gestión de clientes y cálculo de préstamos</p>
+                    </div>
                 </div>
                 <div class="header-actions">
                     <span class="user-info" id="userInfo"></span>
@@ -361,6 +377,45 @@
         <!-- Tab Configuración -->
         <div id="configuracion" class="tab-content">
             <div class="card">
+                <h2>🏢 Configuración de Empresa</h2>
+                <form id="empresaForm">
+                    <div class="form-group">
+                        <label for="nombreEmpresa">Nombre de la Empresa</label>
+                        <input type="text" id="nombreEmpresa" placeholder="Ej: C. Polanco">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="telefonoEmpresa">Teléfono de Contacto</label>
+                            <input type="tel" id="telefonoEmpresa" placeholder="8091234567">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="direccionEmpresa">Dirección</label>
+                            <input type="text" id="direccionEmpresa" placeholder="Calle Principal 123">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="logoEmpresa">Logo de la Empresa</label>
+                        <div class="logo-upload-container">
+                            <div class="logo-preview" id="logoPreview">
+                                <p style="color: #64748b; margin: 0;">Ningún logo cargado</p>
+                            </div>
+                            <input type="file" id="logoEmpresa" accept="image/*" style="display: none;">
+                            <button type="button" class="btn-secondary" onclick="document.getElementById('logoEmpresa').click()">📤 Seleccionar Logo</button>
+                            <button type="button" class="btn-danger" onclick="sistema.eliminarLogo()" style="margin-left: 10px;">🗑️ Eliminar Logo</button>
+                        </div>
+                        <small style="display: block; margin-top: 10px; color: #64748b;">
+                            Formatos soportados: JPG, PNG, GIF. Tamaño máximo: 500KB
+                        </small>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary">💾 Guardar Configuración</button>
+                </form>
+            </div>
+
+            <div class="card">
                 <h2>Configuración de Seguridad</h2>
                 <form id="cambiarPasswordForm">
                     <div class="form-group">
@@ -388,7 +443,30 @@
             </div>
 
             <div class="card">
-                <h2>💾 Respaldo y Restauración</h2>
+                <h2>� Datos de Demostración</h2>
+                <p style="color: #64748b; margin-bottom: 15px;">Carga datos de ejemplo para ver cómo funciona el sistema con clientes y pagos de demostración.</p>
+                
+                <div class="backup-actions">
+                    <div class="backup-item">
+                        <div>
+                            <h4>Cargar Datos de Demostración</h4>
+                            <p>Cargará 4 clientes con préstamos y pagos de ejemplo</p>
+                        </div>
+                        <button id="btnCargarDemo" class="btn-secondary">📊 Cargar Datos Demo</button>
+                    </div>
+                    
+                    <div class="backup-item">
+                        <div>
+                            <h4>Limpiar Datos de Demostración</h4>
+                            <p>Eliminará todos los clientes y pagos actuales</p>
+                        </div>
+                        <button id="btnLimpiarDatos" class="btn-danger">🗑️ Limpiar Datos</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>�💾 Respaldo y Restauración</h2>
                 <p style="color: #64748b; margin-bottom: 20px;">Crea copias de seguridad de todos tus datos y restáuralas cuando lo necesites.</p>
                 
                 <div class="backup-actions">
@@ -437,6 +515,22 @@
             </div>
 
             <div class="card">
+                <h2>📱 Instalar como Aplicación</h2>
+                <p style="color: #64748b; margin-bottom: 15px;">Instala el sistema como una aplicación de escritorio o móvil para un acceso rápido.</p>
+                <button class="btn-secondary" id="btnInstalarApp" onclick="sistema.mostrarOpcionesInstalacion()" style="display: none;">
+                    ⬇️ Instalar Aplicación
+                </button>
+                <div id="infoInstalacion" style="background: #f0f9ff; padding: 15px; border-radius: 8px; border-left: 4px solid #2563eb;">
+                    <p style="margin: 0 0 10px 0; color: #1e40af; font-weight: bold;">Cómo instalar:</p>
+                    <ul style="margin: 0; padding-left: 20px; color: #64748b; font-size: 14px;">
+                        <li><strong>Windows/Mac:</strong> Click en el botón "Instalar Aplicación" o presiona Ctrl+D (Windows) / Cmd+D (Mac) en el navegador</li>
+                        <li><strong>Android:</strong> Toca el menú ⋮ y selecciona "Instalar aplicación"</li>
+                        <li><strong>iPhone:</strong> Toca compartir y selecciona "Agregar a pantalla de inicio"</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card">
                 <h2>⚠️ Zona de Peligro</h2>
                 <p style="color: #ef4444; margin-bottom: 15px;">Esta acción eliminará todos los datos del sistema de forma permanente.</p>
                 <button class="btn-danger" onclick="sistema.borrarTodosDatos()">🗑️ Borrar Todos los Datos</button>
@@ -445,6 +539,53 @@
     </div>
     </div>
 
+    <script src="app.js"></script>
+    <script>
+        // Crear la instancia del sistema después de que el DOM esté listo
+        let sistema;
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            sistema = new SistemaPrestamos();
+        });
+
+        // Registrar Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(registration => {
+                        console.log('Service Worker registrado:', registration);
+                    })
+                    .catch(error => {
+                        console.log('Error registrando Service Worker:', error);
+                    });
+            });
+        }
+
+        // Detectar si la app puede ser instalada
+        let deferredPrompt;
+        const btnInstalar = document.getElementById('btnInstalarApp');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Prevenir que el mini-infobar aparezca automáticamente
+            e.preventDefault();
+            // Guardar el evento para usarlo después
+            deferredPrompt = e;
+            // Mostrar el botón
+            if (btnInstalar) {
+                btnInstalar.style.display = 'block';
+            }
+        });
+
+        window.addEventListener('appinstalled', () => {
+            console.log('App instalada exitosamente');
+            if (btnInstalar) {
+                btnInstalar.style.display = 'none';
+            }
+        });
+    </script>
+
+    <!-- App Scripts -->
+    <script src="firebase-sync.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

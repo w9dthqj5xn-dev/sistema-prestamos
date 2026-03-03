@@ -111,6 +111,24 @@ header {
     gap: 20px;
 }
 
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex: 1;
+}
+
+.logo-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 70px;
+    height: 70px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
 .header-actions {
     display: flex;
     align-items: center;
@@ -526,6 +544,54 @@ tbody tr:last-child {
     font-size: 0.9rem;
     font-style: italic;
     color: var(--text-secondary);
+}
+
+.pago-actions {
+    margin-top: 12px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.pago-actions .btn-secondary {
+    margin: 0;
+    flex: 0 1 auto;
+}
+
+.btn-whatsapp {
+    background: #25D366;
+}
+
+.btn-whatsapp:hover {
+    background: #1ebe5b;
+}
+
+/* Configuración de Empresa */
+.logo-upload-container {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.logo-preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 150px;
+    height: 100px;
+    border: 2px dashed var(--border-color);
+    border-radius: 8px;
+    background: #f8fafc;
+    overflow: hidden;
+}
+
+.logo-preview img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
 }
 
 /* Empty State */
