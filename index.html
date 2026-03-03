@@ -534,15 +534,11 @@
     </div>
     </div>
 
+    <!-- App Scripts -->
+    <script src="firebase-sync.js"></script>
+    <script src="firebase-config.js"></script>
     <script src="app.js"></script>
     <script>
-        // Crear la instancia del sistema después de que el DOM esté listo
-        let sistema;
-        
-        document.addEventListener('DOMContentLoaded', () => {
-            sistema = new SistemaPrestamos();
-        });
-
         // Registrar Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -578,9 +574,5 @@
             }
         });
     </script>
-
-    <!-- App Scripts -->
-    <script src="firebase-sync.js"></script>
-    <script src="app.js"></script>
 </body>
 </html>

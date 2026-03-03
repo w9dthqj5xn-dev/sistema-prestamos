@@ -12,17 +12,28 @@ const firebaseConfig = {
   measurementId: "G-JG6LL9MFKQ"
 };
 
-// Inicializar Firebase
-document.addEventListener('DOMContentLoaded', async () => {
-  try {
-    const initialized = await window.firebaseSync.inicializar(firebaseConfig);
-    if (initialized) {
-      console.log('✅ Firebase conectado correctamente');
-      console.log('📊 Los datos se guardarán en la nube automáticamente');
-    } else {
-      console.log('⚠️ Firebase no disponible, usando localStorage');
+// Inicializar Firebase de inmediato
+async function initializeFirebase() {
+  if (window.firebaseSync) {
+    try {
+      const initialized = await window.firebaseSync.inicializar(firebaseConfig);
+      if (initialized) {
+        console.log('✅ Firebase conectado correctamente');
+        console.log('📊 Los datos se guardarán en la nube automáticamente');
+      } else {
+        console.log('⚠️ Firebase no disponible, usando localStorage');
+      }
+    } catch (error) {
+      console.error('❌ Error al inicializar Firebase:', error);
     }
-  } catch (error) {
-    console.error('❌ Error al inicializar Firebase:', error);
+  } else {
+    console.warn('⚠️ firebaseSync no está disponible');
   }
-});
+}
+
+// Llamar cuando el documento esté listo (pero después de que firebaseSync esté disponible)
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeFirebase);
+} else {
+  initializeFirebase();
+}
