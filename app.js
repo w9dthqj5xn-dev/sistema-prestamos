@@ -41,6 +41,15 @@ class SistemaPrestamos {
     guardarDatos(key, data) {
         try {
             localStorage.setItem(key, JSON.stringify(data));
+            
+            // Sincronizar con Firebase si está disponible
+            if (window.firebaseSync && window.firebaseSync.initialized) {
+                if (key === 'clientes') {
+                    window.firebaseSync.guardarClientes(data);
+                } else if (key === 'pagos') {
+                    window.firebaseSync.guardarPagos(data);
+                }
+            }
         } catch (e) {
             if (e.name === 'QuotaExceededError') {
                 throw new Error('The quota has been exceeded.');
