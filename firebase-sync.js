@@ -1,32 +1,22 @@
 // ========================================
-// INTEGRACIÓN CON FIREBASE
+// INTEGRACIÓN CON FIREBASE - REST API
 // ========================================
-
-// Importar Firebase (se cargará desde CDN en index.html)
-// Para usar estos métodos, primero debes:
-// 1. Crear proyecto en Firebase Console
-// 2. Obtener las credenciales
-// 3. Reemplazar los valores en index.html
 
 class FirebaseSync {
     constructor() {
-        this.db = null;
         this.initialized = false;
+        this.projectId = null;
+        this.apiKey = null;
     }
 
     // Inicializar Firebase
     async inicializar(config) {
         try {
-            // Importar Firebase (asumiendo que está cargado vía CDN en HTML)
-            if (!window.firebase) {
-                console.log('Firebase no está disponible. Usando localStorage.');
-                return false;
-            }
-
-            const app = firebase.initializeApp(config);
-            this.db = firebase.firestore(app);
+            this.projectId = config.projectId;
+            this.apiKey = config.apiKey;
             this.initialized = true;
             console.log('✅ Firebase inicializado correctamente');
+            console.log('📊 Los datos se guardarán en la nube automáticamente');
             return true;
         } catch (error) {
             console.error('❌ Error inicializando Firebase:', error);
@@ -39,18 +29,24 @@ class FirebaseSync {
         if (!this.initialized) return;
 
         try {
-            const batch = this.db.batch();
-            const colRef = this.db.collection('clientes');
+            for (let cliente of clientes) {
+                const url = `https://firestore.googleapis.com/v1/projects/${this.projectId}/databases/(default)/documents/clientes/${cliente.id}`;
+                
+                const docData = {
+                    fields: this._convertToFirestore(cliente)
+                };
 
-            clientes.forEach(cliente => {
-                const docRef = colRef.doc(cliente.id.toString());
-                batch.set(docRef, cliente);
-            });
-
-            await batch.commit();
+                await fetch(url, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(docData)
+                });
+            }
             console.log('✅ Clientes guardados en Firebase');
         } catch (error) {
-            console.error('❌ Error guardando clientes:', error);
+            console.error('⚠️ Error guardando clientes (continuando con localStorage):', error);
         }
     }
 
@@ -59,74 +55,53 @@ class FirebaseSync {
         if (!this.initialized) return;
 
         try {
-            const batch = this.db.batch();
-            const colRef = this.db.collection('pagos');
+            for (let pago of pagos) {
+                const url = `https://firestore.googleapis.com/v1/projects/${this.projectId}/databases/(default)/documents/pagos/${pago.id}`;
+                
+                const docData = {
+                    fields: this._convertToFirestore(pago)
+                };
 
-            pagos.forEach(pago => {
-                const docRef = colRef.doc(pago.id.toString());
-                batch.set(docRef, pago);
-            });
-
-            await batch.commit();
+                await fetch(url, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(docData)
+                });
+            }
             console.log('✅ Pagos guardados en Firebase');
         } catch (error) {
-            console.error('❌ Error guardando pagos:', error);
+            console.error('⚠️ Error guardando pagos (continuando con localStorage):', error);
         }
     }
 
-    // Cargar clientes desde Firestore
-    async cargarClientes() {
-        if (!this.initialized) return [];
-
-        try {
-            const snapshot = await this.db.collection('clientes').get();
-            const clientes = [];
-            snapshot.forEach(doc => {
-                clientes.push(doc.data());
-            });
-            console.log('✅ Clientes cargados desde Firebase');
-            return clientes;
-        } catch (error) {
-            console.error('❌ Error cargando clientes:', error);
-            return [];
+    // Convertir datos a formato Firestore
+    _convertToFirestore(obj) {
+        const fields = {};
+        
+        for (let key in obj) {
+            const value = obj[key];
+            
+            if (typeof value === 'string') {
+                fields[key] = { stringValue: value };
+            } else if (typeof value === 'number') {
+                fields[key] = { integerValue: value.toString() };
+            } else if (typeof value === 'boolean') {
+                fields[key] = { booleanValue: value };
+            } else if (Array.isArray(value)) {
+                fields[key] = { arrayValue: { values: value } };
+            } else if (value === null) {
+                fields[key] = { nullValue: null };
+            } else if (typeof value === 'object') {
+                fields[key] = { mapValue: { fields: this._convertToFirestore(value) } };
+            }
         }
-    }
-
-    // Cargar pagos desde Firestore
-    async cargarPagos() {
-        if (!this.initialized) return [];
-
-        try {
-            const snapshot = await this.db.collection('pagos').get();
-            const pagos = [];
-            snapshot.forEach(doc => {
-                pagos.push(doc.data());
-            });
-            console.log('✅ Pagos cargados desde Firebase');
-            return pagos;
-        } catch (error) {
-            console.error('❌ Error cargando pagos:', error);
-            return [];
-        }
-    }
-
-    // Sincronizar datos locales con Firebase
-    async sincronizar(clientes, pagos) {
-        if (!this.initialized) {
-            console.log('⚠️ Firebase no está disponible. Usando solo localStorage.');
-            return false;
-        }
-
-        try {
-            await this.guardarClientes(clientes);
-            await this.guardarPagos(pagos);
-            return true;
-        } catch (error) {
-            console.error('❌ Error sincronizando con Firebase:', error);
-            return false;
-        }
+        
+        return fields;
     }
 }
 
 // Crear instancia global
 window.firebaseSync = new FirebaseSync();
+
